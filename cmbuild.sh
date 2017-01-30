@@ -1,9 +1,10 @@
 #!/bin/sh
 THREADS=6
+VERSION=cm-13.0
 echo "#########################"
 echo "   Reversing Patches     "
 echo "#########################"
-for file in sprd-patches/sprd/*.patch ; do
+for file in sprd-patches/sprd/$VERSION/*.patch ; do
 	patch -R --force --quiet -p1  < $file
 	if [ $? != "0" ]; then
 		echo "Failed to reverse $file"
@@ -18,7 +19,7 @@ repo sync --force-sync -j$THREADS
 echo "#########################"
 echo "    Applying patches"
 echo "#########################"
-for file in sprd-patches/sprd/*.patch ; do
+for file in sprd-patches/sprd/$VERSION/*.patch ; do
         patch --force --quiet -p1  < $file
         if [ $? != "0" ]; then
 		echo "Failed to apply needed patch, try manually patching $file"
