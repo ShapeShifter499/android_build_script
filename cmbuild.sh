@@ -1,5 +1,5 @@
 #!/bin/sh
-THREADS=6
+THREADS=15
 VERSION=cm-13.0
 echo "#########################"
 echo "   Reversing Patches     "
