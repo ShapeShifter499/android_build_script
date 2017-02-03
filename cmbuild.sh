@@ -52,4 +52,5 @@ else
 	echo "#########################"
 	echo "     Build Failed"
 	echo "#########################"
+	exit 1
 fi
