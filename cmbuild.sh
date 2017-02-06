@@ -29,7 +29,20 @@ echo "#########################"
 echo "     Syncing repo        "
 echo "#########################"
 repo sync --force-sync -j$THREADS
-crashcheck Repo
+if [ "$?" = "0" ]; then
+        echo "#########################"
+        echo "     Repo Success"
+        echo "#########################"
+
+else
+        echo "#########################"
+        echo "     Repo Failed"
+        echo "#########################"
+	echo "Trying to git reset and repo sync again"
+	repo forall -vc "git reset --hard"
+	repo sync --force-sync
+	crashcheck Repo         
+fi
 echo "#########################"
 echo "    Applying patches"
 echo "#########################"
