@@ -1,4 +1,10 @@
 #!/bin/sh
+REPO_SYNC=true
+THREADS=15
+VERSION=cm-13.0
+if [ "$@" = "--no-sync" ]; then
+REPO_SYNC=false
+fi
 crashcheck () {
 if [ "$?" = "0" ]; then
         echo "#########################"
@@ -12,8 +18,7 @@ else
         exit 1
 fi
 }
-THREADS=15
-VERSION=cm-13.0
+if [ "$REPO_SYNC" = "true" ]; then
 echo "#########################"
 echo "   Reversing Patches     "
 echo "#########################"
@@ -56,6 +61,7 @@ for file in sprd-patches/sprd/$VERSION/*.patch ; do
                 echo "Successfully applied $file"
         fi
 done
+fi
 echo "#########################"
 echo "    Executing source"
 echo "#########################"
