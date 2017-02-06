@@ -38,7 +38,6 @@ else
         echo "#########################"
         echo "     Repo Failed"
         echo "#########################"
-	echo "Trying to git reset and repo sync again"
 	repo forall -vc "git reset --hard"
 	repo sync --force-sync
 	crashcheck Repo         
