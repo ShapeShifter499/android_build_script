@@ -56,7 +56,7 @@ for file in sprd-patches/sprd/$VERSION/*.patch ; do
                 echo "Failed to apply needed patch, try manually patching $file"
                 echo "Reversing failed patch"
                 patch -R --force --quiet -p1  < $file
-                exit
+                exit 1
         else
                 echo "Successfully applied $file"
         fi
