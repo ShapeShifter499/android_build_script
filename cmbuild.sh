@@ -28,7 +28,7 @@ done
 echo "#########################"
 echo "     Syncing repo        "
 echo "#########################"
-repo sync --force-sync -j$THREADS
+repo sync --force-sync 
 if [ "$?" = "0" ]; then
         echo "#########################"
         echo "     Repo Success"
