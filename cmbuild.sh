@@ -7,12 +7,12 @@
 
 # List of supported devices
 
-DEVICE_SUPPORT="clark falcon"
+DEVICE_SUPPORT="clark falcon x5"
 
 usage () {
    cat << EOF
 
-lineagebuild.sh <device> <version>
+cmbuild.sh <device> <version>
 Input must be lower case.
 
 This script helps keep sources updated, patched, and then builds LineageOS.
@@ -145,11 +145,11 @@ cp ~/lineageos/manifests/$VERSION/"$DEVICE"_roomservice.xml ~/lineageos/system/$
 echo "========================="
 echo "    Executing source"
 echo "========================="
-source build/envsetup.sh
-crashcheck Source
 unpatch
 reposync
 patch
+source build/envsetup.sh
+crashcheck Source
 echo "========================="
 echo "  Executing breakfast"
 echo "========================="
@@ -176,6 +176,7 @@ echo "================================"
 echo " You can find the build in"
 echo " ~/lineage/roms/$VERSION/$DEVICE"
 echo "================================"
+unpatch
 sleep 20
 clear
 }
@@ -195,11 +196,11 @@ cp ~/lineageos/manifests/$VERSION/"$DEVICE"_roomservice.xml ~/lineageos/system/$
 echo "========================="
 echo "    Executing source"
 echo "========================="
-source build/envsetup.sh
-crashcheck Source
 unpatch
 reposync
 patch
+source build/envsetup.sh
+crashcheck Source
 echo "========================="
 echo "  Executing breakfast"
 echo "========================="
@@ -226,9 +227,62 @@ echo "================================"
 echo " You can find the build in"
 echo " ~/lineage/roms/$VERSION/$DEVICE"
 echo "================================"
+unpatch
 sleep 20
 clear
 }
+
+x5_build () {
+echo "========================="
+echo "Building for LG Volt"
+echo "    Codename x5"
+echo "========================="
+echo ""
+echo ""
+echo "========================="
+echo "   Setting up Manifest"
+echo "========================="
+mkdir -p ~/lineageos/system/$VERSION/.repo/local_manifests/
+cp ~/lineageos/manifests/$VERSION/"$DEVICE"_roomservice.xml ~/lineageos/system/$VERSION/.repo/local_manifests/roomservice.xml
+echo "========================="
+echo "    Executing source"
+echo "========================="
+unpatch
+reposync
+patch
+source build/envsetup.sh
+crashcheck Source
+echo "========================="
+echo "  Executing breakfast"
+echo "========================="
+breakfast $DEVICE
+crashcheck Breakfast
+echo "========================="
+echo "    Clean up source"
+echo "========================="
+# Find command should remove rejected patch files (.rej)
+find . \( -name \*.orig -o -name \*.rej \) -delete
+mka clobber
+crashcheck Clobber
+mka clean
+crashcheck Clean
+echo "========================="
+echo "    Starting Build"
+echo "========================="
+mkdir -p ../../logs/$DEVICE/$VERSION
+brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M%P).log
+crashcheck Build
+mkdir -p ../../roms/$VERSION/$DEVICE
+cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
+echo "================================"
+echo " You can find the build in"
+echo " ~/lineage/roms/$VERSION/$DEVICE"
+echo "================================"
+unpatch
+sleep 20
+clear
+}
+
 
 repoinitcheck
 "$DEVICE"_build
