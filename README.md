@@ -2,7 +2,7 @@
 My lineageOS buildscript.
 
 
-lineagebuild.sh "device" "version"
+./cmbuild.sh "device" "version"
 
 
 Input must be lower case.
