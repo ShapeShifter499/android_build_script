@@ -168,7 +168,7 @@ echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ../../logs/$DEVICE/$VERSION
-brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M%P).log
+brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
@@ -219,7 +219,7 @@ echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ../../logs/$DEVICE/$VERSION
-brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M%P).log
+brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
@@ -270,7 +270,7 @@ echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ../../logs/$DEVICE/$VERSION
-mka bacon > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M%P).log
+mka bacon > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
