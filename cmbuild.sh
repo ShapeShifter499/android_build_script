@@ -39,11 +39,31 @@ fi
 DEVICE=$1
 VERSION=$2
 
-if `list_include_item "$DEVICE_SUPPORT" "$1"`; then
+if `list_include_item "$DEVICE_SUPPORT" "$DEVICE"`; then
   echo ""
 else 
-  echo "Device NOT supported"
+  echo "Device $DEVICE NOT supported"
   usage
+fi
+
+## Setup envronment for build.
+
+# Gobal flags
+
+export USE_CCACHE=1
+export CCACHE_DIR=/home/raansu-ubuntu/.ccache
+export CCACHE_TEMPDIR=/home/raansu-ubuntu/.ccache
+export ANDROID_JACK_VM_ARGS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4G"
+
+# For root su support
+export WITH_SU=true
+
+# Rom specific flags
+
+if [ "$VERSION" == "cm-13.0" ]; then
+   export EXPERIMENTAL_USE_JAVA8=true
+   echo "We are using Java 8 and building cm-13.0"
+   echo "so enable appropriate build flag"
 fi
 
 repoinitcheck () {
@@ -167,8 +187,8 @@ crashcheck Clean
 echo "========================="
 echo "    Starting Build"
 echo "========================="
-mkdir -p ../../logs/$DEVICE/$VERSION
-brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
+brunch $DEVICE 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
@@ -204,7 +224,7 @@ crashcheck Source
 echo "========================="
 echo "  Executing breakfast"
 echo "========================="
-breakfast $DEVICE
+breakfast "$DEVICE"
 crashcheck Breakfast
 echo "========================="
 echo "    Clean up source"
@@ -218,8 +238,8 @@ crashcheck Clean
 echo "========================="
 echo "    Starting Build"
 echo "========================="
-mkdir -p ../../logs/$DEVICE/$VERSION
-brunch $DEVICE > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
+brunch "$DEVICE" 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
@@ -255,7 +275,11 @@ crashcheck Source
 echo "========================="
 echo "  Executing lunch"
 echo "========================="
-lunch lineage_"$DEVICE"-userdebug
+if [ "$VENDOR" == "cm-13.0" ]; then
+    lunch cm_"$DEVICE"-userdebug
+else
+    lunch lineage_"$DEVICE"-userdebug
+fi
 crashcheck Lunch
 echo "========================="
 echo "    Clean up source"
@@ -269,8 +293,8 @@ crashcheck Clean
 echo "========================="
 echo "    Starting Build"
 echo "========================="
-mkdir -p ../../logs/$DEVICE/$VERSION
-mka bacon > ../../logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
+mka bacon 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
 crashcheck Build
 mkdir -p ../../roms/$VERSION/$DEVICE
 cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
