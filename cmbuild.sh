@@ -9,6 +9,8 @@
 
 DEVICE_SUPPORT="clark falcon x5"
 
+BuildTimeDate="$(date +"%Y""%m""%d"_"%H":"%M":"%S")"
+
 usage () {
    cat << EOF
 
@@ -90,7 +92,7 @@ echo "========================="
 echo "     Syncing repo        "
 echo "========================="
 repo forall -c 'git reset --hard --quiet;git clean --force'
-repo sync --force-sync 
+repo sync --force-sync
 if [ "$?" = "0" ]; then
         echo "========================="
         echo "     Repo Success"
@@ -122,17 +124,21 @@ patcher() {
 echo "========================="
 echo "    Applying patches"
 echo "========================="
-for file in ~/lineageos/patches/$VERSION/$DEVICE/*.patch ; do
+if [ -z "`ls -A  ~/lineageos/patches/$VERSION/$DEVICE`" ]; then
+    echo "No patches provided so skipping patching"
+else
+    for file in `ls -v ~/lineageos/patches/$VERSION/$DEVICE/*.patch` ; do
         patch --force --quiet -p1  < $file
-        if [ $? != "0" ]; then
+            if [ $? != "0" ]; then
                 echo "Failed to apply needed patch, try manually patching $file"
                 echo "Reversing failed patch"
                 patch -R --force --quiet -p1  < $file
                 exit 1
-        else
+            else
                 echo "Successfully applied $file"
-        fi
-done
+            fi
+    done
+fi
 }
 
 
@@ -140,19 +146,32 @@ unpatch() {
 echo "========================="
 echo "   Reversing Patches     "
 echo "========================="
-for file in ~/lineageos/patches/$VERSION/$DEVICE/*.patch ; do
+if [ -z "`ls -A  ~/lineageos/patches/$VERSION/$DEVICE`" ]; then
+    echo "No patches provided so there are no patches to reverse"
+else
+    for file in `ls -r ~/lineageos/patches/$VERSION/$DEVICE/*.patch` ; do
         patch -R --force --quiet -p1  < $file
         if [ $? != "0" ]; then
                 echo "Failed to reverse $file"
         else
                 echo "Successfully reversed $file"
         fi
-done
+    done
+fi
 }
+
+BuildCopier () {
+VERSIONCUT=`echo $VERSION | cut -c4-`
+mkdir -p ~/lineageos/roms/$VERSION/$DEVICE
+cp ~/lineageos/system/$VERSION/out/target/product/$DEVICE/lineage-*.zip ~/lineageos/roms/$VERSION/$DEVICE/lineage-$VERSIONCUT-$BuildTimeDate-UNOFFICIAL-$DEVICE.zip
+cp ~/lineageos/system/$VERSION/out/target/product/$DEVICE/lineage-*.zip.md5sum ~/lineageos/roms/$VERSION/$DEVICE/lineage-$VERSIONCUT-$BuildTimeDate-UNOFFICIAL-$DEVICE.zip.md5sum
+cp ~/lineageos/system/$VERSION/out/target/product/$DEVICE/recovery.img ~/lineageos/roms/$VERSION/$DEVICE/recovery-$BuildTimeDate.img
+}
+
 
 clark_build () {
 echo "========================="
-echo "Building for Moto X Pure"
+echo " Building for Moto X Pure"
 echo "    Codename Clark"
 echo "========================="
 echo ""
@@ -188,22 +207,21 @@ echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
-brunch $DEVICE 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+brunch $DEVICE 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$BuildTimeDate.log
 crashcheck Build
-mkdir -p ../../roms/$VERSION/$DEVICE
-cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
 echo "================================"
 echo " You can find the build in"
 echo " ~/lineage/roms/$VERSION/$DEVICE"
 echo "================================"
 unpatch
+rm -rf ~/lineageos/system/$VERSION/kernel
 sleep 20
 clear
 }
 
 falcon_build () {
 echo "========================="
-echo "Building for Moto G 2014"
+echo " Building for Moto G 2014"
 echo "    Codename Falcon"
 echo "========================="
 echo ""
@@ -221,6 +239,7 @@ reposync
 patcher
 source build/envsetup.sh
 crashcheck Source
+repopick 163954
 echo "========================="
 echo "  Executing breakfast"
 echo "========================="
@@ -239,10 +258,8 @@ echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
-brunch "$DEVICE" 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+brunch "$DEVICE" 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$BuildTimeDate.log
 crashcheck Build
-mkdir -p ../../roms/$VERSION/$DEVICE
-cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
 echo "================================"
 echo " You can find the build in"
 echo " ~/lineage/roms/$VERSION/$DEVICE"
@@ -275,7 +292,7 @@ crashcheck Source
 echo "========================="
 echo "  Executing lunch"
 echo "========================="
-if [ "$VENDOR" == "cm-13.0" ]; then
+if [ "$VERSION" == "cm-13.0" ]; then
     lunch cm_"$DEVICE"-userdebug
 else
     lunch lineage_"$DEVICE"-userdebug
@@ -290,14 +307,15 @@ mka clobber
 crashcheck Clobber
 mka clean
 crashcheck Clean
+cd ~/lineageos/system/$VERSION/vendor/qcom/binaries
+git revert --no-edit 63fbdf15
+croot
 echo "========================="
 echo "    Starting Build"
 echo "========================="
 mkdir -p ~/lineageos/logs/$DEVICE/$VERSION
-mka bacon 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$(date +%m-%d-%y_%H:%M).log
+mka bacon 2>&1 > ~/lineageos/logs/$DEVICE/$VERSION/build.$BuildTimeDate.log
 crashcheck Build
-mkdir -p ../../roms/$VERSION/$DEVICE
-cp out/target/product/$DEVICE/lineage-*.zip* ../../roms/$VERSION/$DEVICE
 echo "================================"
 echo " You can find the build in"
 echo " ~/lineage/roms/$VERSION/$DEVICE"
@@ -307,6 +325,6 @@ sleep 20
 clear
 }
 
-
 repoinitcheck
 "$DEVICE"_build
+BuildCopier
