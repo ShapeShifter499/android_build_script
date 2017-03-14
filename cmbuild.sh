@@ -17,6 +17,8 @@ usage () {
 cmbuild.sh <device> <version>
 Input must be lower case.
 
+Devices supported $DEVICE_SUPPORT
+
 This script helps keep sources updated, patched, and then builds LineageOS.
 EOF
    exit 1
