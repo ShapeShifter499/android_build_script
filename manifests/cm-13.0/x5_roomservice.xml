@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote  name="https" fetch="https://github.com" />
+  <project name="LineageOS/android_device_qcom_common" path="device/qcom/common" remote="github" revision="cm-13.0" />
+  <project name="LineageOS/android_external_sony_boringssl-compat" path="external/sony/boringssl-compat" remote="github" revision="cm-13.0" />
+  <project name="ShapeShifter499/android_kernel_lge_msm8226" path="kernel/lge/msm8226" remote="https" revision="cm-13.0" />
+  <project name="ShapeShifter499/proprietary_vendor_lge" path="vendor/lge" remote="github" revision="cm-13.0" />
+  <project name="ShapeShifter499/android_device_lge_msm8226-common" path="device/lge/msm8226-common" remote="https" revision="cm-13.0" />
+  <project name="ShapeShifter499/android_device_lge_x5" path="device/lge/x5" remote="github" revision="cm-13.0-TEST" />
+  <project name="spock1104/android_bootable_recovery" path="bootable/recovery-twrp" remote="https" revision="android-6.0" />
+  <project name="spock1104/android_external_busybox" path="external/busybox" remote="https" revision="android-6.0" />
+</manifest>
