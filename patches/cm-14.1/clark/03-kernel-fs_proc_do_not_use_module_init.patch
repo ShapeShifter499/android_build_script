@@ -1,0 +1,208 @@
+From abaf3787ac26ba33e2f75e76b1174c32254c25b0 Mon Sep 17 00:00:00 2001
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Thu, 23 Jan 2014 15:55:45 -0800
+Subject: [PATCH] fs/proc: don't use module_init for non-modular core code
+
+PROC_FS is a bool, so this code is either present or absent.  It will
+never be modular, so using module_init as an alias for __initcall is
+rather misleading.
+
+Fix this up now, so that we can relocate module_init from init.h into
+module.h in the future.  If we don't do this, we'd have to add module.h to
+obviously non-modular code, and that would be ugly at best.
+
+Note that direct use of __initcall is discouraged, vs.  one of the
+priority categorized subgroups.  As __initcall gets mapped onto
+device_initcall, our use of fs_initcall (which makes sense for fs code)
+will thus change these registrations from level 6-device to level 5-fs
+(i.e.  slightly earlier).  However no observable impact of that small
+difference has been observed during testing, or is expected.
+
+Also note that this change uncovers a missing semicolon bug in the
+registration of vmcore_init as an initcall.
+
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ kernel/motorola/msm8992/fs/proc/cmdline.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/consoles.c   | 2 +-
+ kernel/motorola/msm8992/fs/proc/cpuinfo.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/devices.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/interrupts.c | 2 +-
+ kernel/motorola/msm8992/fs/proc/kcore.c      | 2 +-
+ kernel/motorola/msm8992/fs/proc/kmsg.c       | 2 +-
+ kernel/motorola/msm8992/fs/proc/loadavg.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/meminfo.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/nommu.c      | 2 +-
+ kernel/motorola/msm8992/fs/proc/page.c       | 2 +-
+ kernel/motorola/msm8992/fs/proc/softirqs.c   | 2 +-
+ kernel/motorola/msm8992/fs/proc/stat.c       | 2 +-
+ kernel/motorola/msm8992/fs/proc/uptime.c     | 2 +-
+ kernel/motorola/msm8992/fs/proc/version.c    | 2 +-
+ kernel/motorola/msm8992/fs/proc/vmcore.c     | 2 +-
+ 16 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/kernel/motorola/msm8992/fs/proc/cmdline.c b/kernel/motorola/msm8992/fs/proc/cmdline.c
+index 82676e3..cbd82df 100644
+--- a/kernel/motorola/msm8992/fs/proc/cmdline.c
++++ b/kernel/motorola/msm8992/fs/proc/cmdline.c
+@@ -26,4 +26,4 @@ static int __init proc_cmdline_init(void)
+ 	proc_create("cmdline", 0, NULL, &cmdline_proc_fops);
+ 	return 0;
+ }
+-module_init(proc_cmdline_init);
++fs_initcall(proc_cmdline_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/consoles.c b/kernel/motorola/msm8992/fs/proc/consoles.c
+index 51942d5..290ba85 100644
+--- a/kernel/motorola/msm8992/fs/proc/consoles.c
++++ b/kernel/motorola/msm8992/fs/proc/consoles.c
+@@ -109,4 +109,4 @@ static int __init proc_consoles_init(void)
+ 	proc_create("consoles", 0, NULL, &proc_consoles_operations);
+ 	return 0;
+ }
+-module_init(proc_consoles_init);
++fs_initcall(proc_consoles_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/cpuinfo.c b/kernel/motorola/msm8992/fs/proc/cpuinfo.c
+index 5a1e539..06f4d31 100644
+--- a/kernel/motorola/msm8992/fs/proc/cpuinfo.c
++++ b/kernel/motorola/msm8992/fs/proc/cpuinfo.c
+@@ -21,4 +21,4 @@ static int __init proc_cpuinfo_init(void)
+ 	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
+ 	return 0;
+ }
+-module_init(proc_cpuinfo_init);
++fs_initcall(proc_cpuinfo_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/devices.c b/kernel/motorola/msm8992/fs/proc/devices.c
+index b143471..50493ed 100644
+--- a/kernel/motorola/msm8992/fs/proc/devices.c
++++ b/kernel/motorola/msm8992/fs/proc/devices.c
+@@ -67,4 +67,4 @@ static int __init proc_devices_init(void)
+ 	proc_create("devices", 0, NULL, &proc_devinfo_operations);
+ 	return 0;
+ }
+-module_init(proc_devices_init);
++fs_initcall(proc_devices_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/interrupts.c b/kernel/motorola/msm8992/fs/proc/interrupts.c
+index 05029c0..a352d57 100644
+--- a/kernel/motorola/msm8992/fs/proc/interrupts.c
++++ b/kernel/motorola/msm8992/fs/proc/interrupts.c
+@@ -50,4 +50,4 @@ static int __init proc_interrupts_init(void)
+ 	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
+ 	return 0;
+ }
+-module_init(proc_interrupts_init);
++fs_initcall(proc_interrupts_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/kcore.c b/kernel/motorola/msm8992/fs/proc/kcore.c
+index 5ed0e52..39e6ef3 100644
+--- a/kernel/motorola/msm8992/fs/proc/kcore.c
++++ b/kernel/motorola/msm8992/fs/proc/kcore.c
+@@ -639,4 +639,4 @@ static int __init proc_kcore_init(void)
+ 
+ 	return 0;
+ }
+-module_init(proc_kcore_init);
++fs_initcall(proc_kcore_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/kmsg.c b/kernel/motorola/msm8992/fs/proc/kmsg.c
+index bdfabda..05f8dcd 100644
+--- a/kernel/motorola/msm8992/fs/proc/kmsg.c
++++ b/kernel/motorola/msm8992/fs/proc/kmsg.c
+@@ -61,4 +61,4 @@ static int __init proc_kmsg_init(void)
+ 	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
+ 	return 0;
+ }
+-module_init(proc_kmsg_init);
++fs_initcall(proc_kmsg_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/loadavg.c b/kernel/motorola/msm8992/fs/proc/loadavg.c
+index 1afa4dd..aec66e6 100644
+--- a/kernel/motorola/msm8992/fs/proc/loadavg.c
++++ b/kernel/motorola/msm8992/fs/proc/loadavg.c
+@@ -42,4 +42,4 @@ static int __init proc_loadavg_init(void)
+ 	proc_create("loadavg", 0, NULL, &loadavg_proc_fops);
+ 	return 0;
+ }
+-module_init(proc_loadavg_init);
++fs_initcall(proc_loadavg_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/meminfo.c b/kernel/motorola/msm8992/fs/proc/meminfo.c
+index 24270ec..136e548 100644
+--- a/kernel/motorola/msm8992/fs/proc/meminfo.c
++++ b/kernel/motorola/msm8992/fs/proc/meminfo.c
+@@ -220,4 +220,4 @@ static int __init proc_meminfo_init(void)
+ 	proc_create("meminfo", 0, NULL, &meminfo_proc_fops);
+ 	return 0;
+ }
+-module_init(proc_meminfo_init);
++fs_initcall(proc_meminfo_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/nommu.c b/kernel/motorola/msm8992/fs/proc/nommu.c
+index 5f9bc8a..d4a3574 100644
+--- a/kernel/motorola/msm8992/fs/proc/nommu.c
++++ b/kernel/motorola/msm8992/fs/proc/nommu.c
+@@ -131,4 +131,4 @@ static int __init proc_nommu_init(void)
+ 	return 0;
+ }
+ 
+-module_init(proc_nommu_init);
++fs_initcall(proc_nommu_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/page.c b/kernel/motorola/msm8992/fs/proc/page.c
+index cab84b6..02174a6 100644
+--- a/kernel/motorola/msm8992/fs/proc/page.c
++++ b/kernel/motorola/msm8992/fs/proc/page.c
+@@ -219,4 +219,4 @@ static int __init proc_page_init(void)
+ 	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
+ 	return 0;
+ }
+-module_init(proc_page_init);
++fs_initcall(proc_page_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/softirqs.c b/kernel/motorola/msm8992/fs/proc/softirqs.c
+index 62604be..ad8a77f 100644
+--- a/kernel/motorola/msm8992/fs/proc/softirqs.c
++++ b/kernel/motorola/msm8992/fs/proc/softirqs.c
+@@ -41,4 +41,4 @@ static int __init proc_softirqs_init(void)
+ 	proc_create("softirqs", 0, NULL, &proc_softirqs_operations);
+ 	return 0;
+ }
+-module_init(proc_softirqs_init);
++fs_initcall(proc_softirqs_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/stat.c b/kernel/motorola/msm8992/fs/proc/stat.c
+index 1cf86c0..6f599c6 100644
+--- a/kernel/motorola/msm8992/fs/proc/stat.c
++++ b/kernel/motorola/msm8992/fs/proc/stat.c
+@@ -221,4 +221,4 @@ static int __init proc_stat_init(void)
+ 	proc_create("stat", 0, NULL, &proc_stat_operations);
+ 	return 0;
+ }
+-module_init(proc_stat_init);
++fs_initcall(proc_stat_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/uptime.c b/kernel/motorola/msm8992/fs/proc/uptime.c
+index 0618946..7141b8d 100644
+--- a/kernel/motorola/msm8992/fs/proc/uptime.c
++++ b/kernel/motorola/msm8992/fs/proc/uptime.c
+@@ -49,4 +49,4 @@ static int __init proc_uptime_init(void)
+ 	proc_create("uptime", 0, NULL, &uptime_proc_fops);
+ 	return 0;
+ }
+-module_init(proc_uptime_init);
++fs_initcall(proc_uptime_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/version.c b/kernel/motorola/msm8992/fs/proc/version.c
+index 76817a6..d2154eb 100644
+--- a/kernel/motorola/msm8992/fs/proc/version.c
++++ b/kernel/motorola/msm8992/fs/proc/version.c
+@@ -31,4 +31,4 @@ static int __init proc_version_init(void)
+ 	proc_create("version", 0, NULL, &version_proc_fops);
+ 	return 0;
+ }
+-module_init(proc_version_init);
++fs_initcall(proc_version_init);
+diff --git a/kernel/motorola/msm8992/fs/proc/vmcore.c b/kernel/motorola/msm8992/fs/proc/vmcore.c
+index 9100d69..2ca7ba0 100644
+--- a/kernel/motorola/msm8992/fs/proc/vmcore.c
++++ b/kernel/motorola/msm8992/fs/proc/vmcore.c
+@@ -1082,7 +1082,7 @@ static int __init vmcore_init(void)
+ 		proc_vmcore->size = vmcore_size;
+ 	return 0;
+ }
+-module_init(vmcore_init)
++fs_initcall(vmcore_init);
+ 
+ /* Cleanup function for vmcore module. */
+ void vmcore_cleanup(void)

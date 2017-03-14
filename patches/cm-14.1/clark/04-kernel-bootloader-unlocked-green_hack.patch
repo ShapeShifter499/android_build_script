@@ -1,0 +1,53 @@
+From 29d03dae804be6d98c35c758c2b364e43be484ed Mon Sep 17 00:00:00 2001
+From: James Christopher Adduono <jc@adduono.com>
+Date: Mon, 2 Jan 2017 09:04:28 -0500
+Subject: [PATCH] proc: Set androidboot.verifiedbootstate=green
+
+Change-Id: I584e0de8f5602eb2631390b47c8916fa22c50375
+---
+ kernel/motorola/msm8992/fs/proc/cmdline.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/motorola/msm8992/fs/proc/cmdline.c b/kernel/motorola/msm8992/fs/proc/cmdline.c
+index cbd82df..7cdf7a9 100644
+--- a/kernel/motorola/msm8992/fs/proc/cmdline.c
++++ b/kernel/motorola/msm8992/fs/proc/cmdline.c
+@@ -2,10 +2,13 @@
+ #include <linux/init.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#include <asm/setup.h>
++
++static char proc_cmdline[COMMAND_LINE_SIZE];
+ 
+ static int cmdline_proc_show(struct seq_file *m, void *v)
+ {
+-	seq_printf(m, "%s\n", saved_command_line);
++	seq_printf(m, "%s\n", proc_cmdline);
+ 	return 0;
+ }
+ 
+@@ -23,6 +26,23 @@ static const struct file_operations cmdline_proc_fops = {
+ 
+ static int __init proc_cmdline_init(void)
+ {
++	/* SafetyNet bypass: show androidboot.verifiedbootstate=green */
++	char *a1, *a2;
++
++	a1 = strstr(saved_command_line, "androidboot.verifiedbootstate=");
++	if (a1) {
++		a1 = strchr(a1, '=');
++		a2 = strchr(a1, ' ');
++		if (!a2) /* last argument on the cmdline */
++			a2 = "";
++
++		scnprintf(proc_cmdline, COMMAND_LINE_SIZE, "%.*sgreen%s",
++			  (int)(a1 - saved_command_line + 1),
++			  saved_command_line, a2);
++	} else {
++		strncpy(proc_cmdline, saved_command_line, COMMAND_LINE_SIZE);
++	}
++
+ 	proc_create("cmdline", 0, NULL, &cmdline_proc_fops);
+ 	return 0;
+ }
